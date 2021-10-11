@@ -5,11 +5,14 @@ from __future__ import division
 import os
 from os.path import join as pjoin
 
-import tensorflow as tf
-
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf
 # Modify this function to set your home directory for this repo
+
+
 def home_out(path):
-    return pjoin(os.environ['HOME'], 'tmp', 'MoCap', path)
+    return pjoin(os.path.expanduser('~'), 'tmp', 'MoCap', path)
+
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -23,14 +26,14 @@ flags.DEFINE_integer('chunk_length', 1, 'Length of the chunks, for the data proc
 #                               Flags about training
 flags.DEFINE_float('learning_rate', 0.0001,
                    'learning rate for training .')
-flags.DEFINE_float('pretraining_learning_rate', 0.001 ,
+flags.DEFINE_float('pretraining_learning_rate', 0.001,
                    'learning rate for training .')
 
 flags.DEFINE_float('variance_of_noise', 0.05, 'Coefficient for the gaussian noise '
                                               'added to every point in input during the training')
 
-flags.DEFINE_boolean('pretrain', False,' Whether we pretrain the model in a layerwise way')
-flags.DEFINE_boolean('restore', False,' Whether we restore the model from the checkpoint')
+flags.DEFINE_boolean('pretrain', False, ' Whether we pretrain the model in a layerwise way')
+flags.DEFINE_boolean('restore', False, ' Whether we restore the model from the checkpoint')
 
 flags.DEFINE_boolean('evaluate', False, ' Whether we are evaluating the system')
 

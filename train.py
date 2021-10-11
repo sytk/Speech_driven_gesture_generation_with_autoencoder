@@ -4,6 +4,7 @@ It contains speech-motion neural network implemented in Keras
 This script should be used to train the model, as described in READ.me
 """
 
+from matplotlib import pyplot
 import sys
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -11,17 +12,20 @@ from sklearn.model_selection import train_test_split
 from keras.models import Sequential
 from keras.layers import Dense, Activation, Dropout
 from keras.layers.recurrent import SimpleRNN, LSTM, GRU
-from keras.optimizers import SGD, Adam
+# from keras.optimizers import SGD, Adam
+from tensorflow.keras.optimizers import SGD, Adam
 from keras.layers.wrappers import TimeDistributed, Bidirectional
-from keras.layers.normalization import BatchNormalization
+# from keras.layers.normalization import BatchNormalization
+
+from tensorflow.keras.layers import BatchNormalization
+import tensorflow.compat.v1 as tf
 
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import pyplot
 
 # Check if script get enough parameters
 if len(sys.argv) < 6:
-        raise ValueError(
+    raise ValueError(
            'Not enough paramters! \nUsage : python train.py MODEL_NAME EPOCHS DATA_DIR N_INPUT ENCODE (DIM)')
 ENCODED = sys.argv[5].lower() == 'true'
 
@@ -29,7 +33,7 @@ if ENCODED:
     if len(sys.argv) < 7:
         raise ValueError(
            'Not enough paramters! \nUsage : python train.py MODEL_NAME EPOCHS DATA_DIR N_INPUT ENCODE DIM')
-    else:    
+    else:
         N_OUTPUT = int(sys.argv[6])  # Representation dimensionality
 else:
     N_OUTPUT = 192 * 2  # Number of Gesture Feature (position + velocity)
@@ -62,7 +66,7 @@ def train(model_file):
     if ENCODED:
 
         # If we learn speech-representation mapping we use encoded motion as output
-        Y = np.load(DATA_DIR + '/' + str(N_OUTPUT)+ '/Y_train_encoded.npy')
+        Y = np.load(DATA_DIR + '/' + str(N_OUTPUT) + '/Y_train_encoded.npy')
 
         # Correct the sizes
         train_size = min(X.shape[0], Y.shape[0])
@@ -85,12 +89,12 @@ def train(model_file):
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.1))
-    
+
     model.add(TimeDistributed(Dense(N_HIDDEN)))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.1))
-    
+
     model.add(TimeDistributed(Dense(N_HIDDEN)))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
@@ -100,7 +104,7 @@ def train(model_file):
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.1))
-    
+
     model.add(Dense(N_OUTPUT))
     model.add(Activation('linear'))
 
@@ -110,7 +114,7 @@ def train(model_file):
     model.compile(loss='mean_squared_error', optimizer=optimizer)
 
     hist = model.fit(X_train, Y_train, batch_size=BATCH_SIZE, epochs=EPOCHS, validation_data=(X_validation, Y_validation))
-     
+
     model.save(model_file)
 
     # Save convergence results into an image

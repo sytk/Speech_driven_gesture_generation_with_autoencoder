@@ -15,6 +15,8 @@ import numpy as np
 from DAE import DAE
 import utils.utils as ut
 import utils.flags as fl
+import tensorflow.compat.v1 as tf
+
 
 class DataInfo(object):
     """Information about the datasets
@@ -273,6 +275,7 @@ def learning(data, data_info, just_restore=False):
 ####                                    #######
 ###############################################
 
+
 def encode(nn, input_seq):
     """ Obtaining a representation from AE (AutoEncoder)
 
@@ -308,8 +311,8 @@ def encode(nn, input_seq):
 
         # Check if we can cut sequence into the chunks of length ae.sequence_length
         if coords_normalized.shape[0] < nn.sequence_length:
-            mupliplication_factor = int(nn.batch_size * nn.sequence_length /
-                                        coords_normalized.shape[0]) + 1
+            mupliplication_factor = int(nn.batch_size * nn.sequence_length
+                                        / coords_normalized.shape[0]) + 1
 
             # Pad the sequence with itself in order to fill the sequence completely
             coords_normalized = np.tile(coords_normalized, (mupliplication_factor, 1))
@@ -349,6 +352,7 @@ def encode(nn, input_seq):
 
         return output_vec
 
+
 def decode(nn, represent_vec):
     """ Decoding a representation from AE (AutoEncoder)
 
@@ -374,8 +378,8 @@ def decode(nn, represent_vec):
 
         # Check if we can cut sequence into the chunks of length ae.sequence_length
         if represent_vec.shape[0] < nn.sequence_length:
-            mupliplication_factor = int(nn.batch_size * nn.sequence_length /
-                                        represent_vec.shape[0]) + 1
+            mupliplication_factor = int(nn.batch_size * nn.sequence_length
+                                        / represent_vec.shape[0]) + 1
 
             # Pad the sequence with itself in order to fill the sequence completely
             represent_vec = np.tile(represent_vec, (mupliplication_factor, 1))
@@ -421,6 +425,7 @@ def decode(nn, represent_vec):
 ####                                    #######
 ###############################################
 
+
 def layerwise_pretrain(nn, trainers, layers_amount, num_batches):
     """
     Pretrain AutoEncoding neural network in a layer-wise way
@@ -458,9 +463,9 @@ def layerwise_pretrain(nn, trainers, layers_amount, num_batches):
                 loss_summary, loss_value = sess.run([pretrain_trainer, loss])
 
                 if debug:
-                    if steps%num_batches == 0:
-                        print("After "+ str(steps/num_batches)+" epochs loss is "+ str(loss_value))
+                    if steps % num_batches == 0:
+                        print("After " + str(steps/num_batches)+" epochs loss is " + str(loss_value))
 
             # Copy the trained weights to the fixed matrices and biases
-            nn['matrix'+str(n)+ '_pretrained'] = nn._w(n)
-            nn['bias'+str(n)+ '_pretrained'] = nn._b(n)
+            nn['matrix'+str(n) + '_pretrained'] = nn._w(n)
+            nn['bias'+str(n) + '_pretrained'] = nn._b(n)

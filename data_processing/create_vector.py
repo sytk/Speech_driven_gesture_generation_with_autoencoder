@@ -13,18 +13,18 @@ import pyquaternion as pyq
 
 from tools import *
 
-N_OUTPUT = 384 # Number of gesture features (position)
-WINDOW_LENGTH = 50 # in miliseconds
+N_OUTPUT = 384  # Number of gesture features (position)
+WINDOW_LENGTH = 50  # in miliseconds
 FEATURES = "MFCC"
 
 if FEATURES == "MFCC":
-    N_INPUT = 26 # Number of MFCC features
+    N_INPUT = 26  # Number of MFCC features
 if FEATURES == "Pros":
-    N_INPUT = 4 # Number of prosodic features
+    N_INPUT = 4  # Number of prosodic features
 if FEATURES == "MFCC+Pros":
-    N_INPUT = 30 # Total number of features
+    N_INPUT = 30  # Total number of features
 if FEATURES == "Spectro":
-    N_INPUT = 64 # Number of spectrogram features
+    N_INPUT = 64  # Number of spectrogram features
 if FEATURES == "Spectro+Pros":
     N_INPUT = 68  # Total number of eatures
 if FEATURES == "MFCC+Spectro":
@@ -57,7 +57,7 @@ def pad_sequence(input_vectors):
 
         # Pad sequence with zeros
 
-        prosodic_empty_vector =[0, 0, 0, 0]
+        prosodic_empty_vector = [0, 0, 0, 0]
 
         empty_vectors = np.array([prosodic_empty_vector] * int(N_CONTEXT / 2))
 
@@ -123,6 +123,7 @@ def pad_sequence(input_vectors):
 
     return new_input_vectors
 
+
 def create_vectors(audio_filename, gesture_filename, nodes):
     """
     Extract features from a given pair of audio and motion files
@@ -156,7 +157,7 @@ def create_vectors(audio_filename, gesture_filename, nodes):
 
         input_vectors = np.concatenate((mfcc_vectors, pros_vectors), axis=1)
 
-    if FEATURES =="Spectro":
+    if FEATURES == "Spectro":
 
         input_vectors = calculate_spectrogram(audio_filename)
 
@@ -177,7 +178,7 @@ def create_vectors(audio_filename, gesture_filename, nodes):
 
         spectr_vectors, mfcc_vectors = shorten(spectr_vectors, mfcc_vectors)
 
-        input_vectors = np.concatenate((mfcc_vectors,spectr_vectors), axis=1)
+        input_vectors = np.concatenate((mfcc_vectors, spectr_vectors), axis=1)
 
     if FEATURES == "MFCC+Spectro+Pros":
 
@@ -189,7 +190,7 @@ def create_vectors(audio_filename, gesture_filename, nodes):
 
         spectr_vectors, mfcc_vectors, pros_vectors = shorten3(spectr_vectors, mfcc_vectors, pros_vectors)
 
-        input_vectors = np.concatenate((mfcc_vectors,spectr_vectors, pros_vectors), axis=1)
+        input_vectors = np.concatenate((mfcc_vectors, spectr_vectors, pros_vectors), axis=1)
 
     # Step 2: Read motions
 
@@ -201,7 +202,6 @@ def create_vectors(audio_filename, gesture_filename, nodes):
 
         # Subsample motion (from 60 fsp to 20 fsp)
         output_vectors = output_vectors[0::3]
-
 
     elif motion_format == "bvh":
         f = open(gesture_filename, 'r')
@@ -247,10 +247,10 @@ def create_vectors(audio_filename, gesture_filename, nodes):
     for i in range(strides):
         stride = i + int(N_CONTEXT/2)
         if i == 0:
-            input_with_context = input_vectors[stride - int(N_CONTEXT/2) : stride + int(N_CONTEXT/2) + 1].reshape(1, N_CONTEXT+1, N_INPUT)
+            input_with_context = input_vectors[stride - int(N_CONTEXT/2): stride + int(N_CONTEXT/2) + 1].reshape(1, N_CONTEXT+1, N_INPUT)
             output_with_context = output_vectors[i].reshape(1, N_OUTPUT)
         else:
-            input_with_context = np.append(input_with_context, input_vectors[stride - int(N_CONTEXT/2) : stride + int(N_CONTEXT/2) + 1].reshape(1, N_CONTEXT+1, N_INPUT), axis=0)
+            input_with_context = np.append(input_with_context, input_vectors[stride - int(N_CONTEXT/2): stride + int(N_CONTEXT/2) + 1].reshape(1, N_CONTEXT+1, N_INPUT), axis=0)
             output_with_context = np.append(output_with_context, output_vectors[i].reshape(1, N_OUTPUT), axis=0)
 
     return input_with_context, output_with_context
@@ -285,26 +285,26 @@ def create_hierarchy_nodes(hierarchy):
     for idx, name in enumerate(joint_names):
         if idx == 0:
             parent = None
-        elif idx in [6, 30]: #spine1->shoulders
+        elif idx in [6, 30]:  # spine1->shoulders
             parent = 2
-        elif idx in [14, 18, 22, 26]: #lefthand->leftfingers
+        elif idx in [14, 18, 22, 26]:  # lefthand->leftfingers
             parent = 9
-        elif idx in [38, 42, 46, 50]: #righthand->rightfingers
+        elif idx in [38, 42, 46, 50]:  # righthand->rightfingers
             parent = 33
-        elif idx in [54, 59]: #hip->legs
+        elif idx in [54, 59]:  # hip->legs
             parent = 0
         else:
             parent = idx - 1
 
         if name == 'End Site':
             children = None
-        elif idx == 0: #hips
+        elif idx == 0:  # hips
             children = [1, 54, 59]
-        elif idx == 2: #spine1
+        elif idx == 2:  # spine1
             children = [3, 6, 30]
-        elif idx == 9: #lefthand
+        elif idx == 9:  # lefthand
             children = [10, 14, 18, 22, 26]
-        elif idx == 33: #righthand
+        elif idx == 33:  # righthand
             children = [34, 38, 42, 46, 50]
         else:
             children = [idx + 1]
@@ -332,14 +332,14 @@ def rot_vec_to_abs_pos_vec(frames, nodes):
 
     for frame in frames:
         node_idx = 0
-        for i in range(51): #changed from 51
+        for i in range(51):  # changed from 51
             stepi = i*3
             z_deg = float(frame[stepi])
             x_deg = float(frame[stepi+1])
             y_deg = float(frame[stepi+2])
 
             if nodes[node_idx]['name'] == 'End Site':
-                 node_idx = node_idx + 1
+                node_idx = node_idx + 1
             nodes[node_idx]['rel_degs'] = [z_deg, x_deg, y_deg]
             current_node = nodes[node_idx]
 
@@ -348,7 +348,7 @@ def rot_vec_to_abs_pos_vec(frames, nodes):
         for start_node in nodes:
             abs_pos = np.array([0, 60, 0])
             current_node = start_node
-            if start_node['children'] is not None: #= if not start_node['name'] = 'end site'
+            if start_node['children'] is not None:  # = if not start_node['name'] = 'end site'
                 for child_idx in start_node['children']:
                     child_node = nodes[child_idx]
 
@@ -358,7 +358,7 @@ def rot_vec_to_abs_pos_vec(frames, nodes):
                     qy = pyq.Quaternion(axis=[0, 1, 0], degrees=start_node['rel_degs'][2])
                     qrot = qz * qx * qy
                     offset_rotated = qrot.rotate(child_offset)
-                    child_node['rel_pos']= start_node['abs_qt'].rotate(offset_rotated)
+                    child_node['rel_pos'] = start_node['abs_qt'].rotate(offset_rotated)
 
                     child_node['abs_qt'] = start_node['abs_qt'] * qrot
 
@@ -424,7 +424,7 @@ def create(name, nodes):
             X = np.concatenate((X, input_vectors), axis=0)
             Y = np.concatenate((Y, output_vectors), axis=0)
 
-        if i%3==0:
+        if i % 3 == 0:
             print("^^^^^^^^^^^^^^^^^^")
             print('{:.2f}% of processing for {:.8} dataset is done'.format(100.0 * (i+1) / len(DATA_FILE), str(name)))
             print("Current dataset sizes are:")
@@ -453,13 +453,14 @@ def create_test_sequences(nodes, dataset):
     for i in range(len(DATA_FILE)):
         input_vectors, output_vectors = create_vectors(DATA_FILE['wav_filename'][i], DATA_FILE['bvh_filename'][i], nodes)
 
-        array = DATA_FILE['wav_filename'][i].split("/")
+        # array = DATA_FILE['wav_filename'][i].split("/")
+        array = DATA_FILE['wav_filename'][i].split("\\")
         name = array[len(array)-1].split(".")[0]
 
         X = input_vectors
 
         if not os.path.isdir(DATA_DIR + '/'+dataset+'_inputs'):
-            os.makedirs(DATA_DIR +  '/'+dataset+'_inputs')
+            os.makedirs(DATA_DIR + '/'+dataset+'_inputs')
 
         x_file_name = DATA_DIR + '/'+dataset+'_inputs/X_test_' + name + '.npy'
 

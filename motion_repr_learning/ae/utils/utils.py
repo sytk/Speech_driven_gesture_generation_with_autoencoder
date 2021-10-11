@@ -8,8 +8,10 @@ import tensorflow as tf
 
 
 import utils.flags as fl
+import tensorflow.compat.v1 as tf
 
 """ Dataset class"""
+
 
 class DataSet(object):
     '''
@@ -17,7 +19,6 @@ class DataSet(object):
     which might be needed during training,
     such as batch size amount of epochs completed and so on.
     '''
-
 
     def __init__(self, sequences, batch_size):
         self._batch_size = batch_size
@@ -35,11 +36,13 @@ class DataSet(object):
     def num_sequences(self):
         return self._num_sequences
 
+
 class DataSets(object):
     '''
       A class for storing Train and Eval datasets and all related information,
       '''
     pass
+
 
 def read_test_seq_from_binary(binary_file_name):
     """ Read test sequence from the binart file
@@ -58,9 +61,10 @@ def read_test_seq_from_binary(binary_file_name):
         read_seq = read_seq[0:amount_of_frames * fl.FLAGS.chunk_length]
 
     # Reshape
-    read_seq = read_seq.reshape(-1, fl.FLAGS.frame_size * fl.FLAGS.chunk_length) #?
+    read_seq = read_seq.reshape(-1, fl.FLAGS.frame_size * fl.FLAGS.chunk_length)  # ?
 
     return read_seq
+
 
 def add_noise(x, variance_multiplier, sigma):
     """
@@ -76,6 +80,7 @@ def add_noise(x, variance_multiplier, sigma):
     noise = tf.random_normal(x.shape, 0.0, stddev=np.multiply(sigma, variance_multiplier) + eps)
     x = x + noise
     return x
+
 
 def loss_reconstruction(output, target, max_vals, pretrain=False):
     """ Reconstruction error. Square of the RMSE
@@ -105,6 +110,7 @@ def loss_reconstruction(output, target, max_vals, pretrain=False):
         squared_error = tf.reduce_mean(tf.square(error_scaled, name="square"), name="averaging")
     return squared_error
 
+
 def convert_back_to_3d_coords(sequence, max_val, mean_pose):
     '''
     Convert back from the normalized values between -1 and 1 to original 3d coordinates
@@ -130,6 +136,7 @@ def convert_back_to_3d_coords(sequence, max_val, mean_pose):
 
     return reconstructed
 
+
 def reshape_dataset(dataset):
     """
     Changing the shape of the dataset array to correspond to the frame dimentionality
@@ -149,6 +156,7 @@ def reshape_dataset(dataset):
                                                 fl.FLAGS.chunk_length * fl.FLAGS.frame_size])
 
     return dataset_final
+
 
 def prepare_motion_data(data_dir):
     """
@@ -198,7 +206,6 @@ def prepare_motion_data(data_dir):
         max_val = np.tile(max_val, fl.FLAGS.chunk_length)
         mean_pose = np.tile(mean_pose, fl.FLAGS.chunk_length)
 
-
     # Some tests for flags
     if fl.FLAGS.restore and fl.FLAGS.pretrain:
         print('ERROR! You cannot restore and pretrain at the same time!'
@@ -211,4 +218,4 @@ def prepare_motion_data(data_dir):
         exit(1)
 
     return Y_train_normalized, Y_train, Y_test_normalized, Y_test,\
-           Y_dev_normalized, max_val, mean_pose
+        Y_dev_normalized, max_val, mean_pose

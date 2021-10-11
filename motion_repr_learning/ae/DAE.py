@@ -15,6 +15,7 @@ import numpy as np
 
 from utils.utils import add_noise, loss_reconstruction
 from utils.flags import FLAGS
+import tensorflow.compat.v1 as tf
 
 
 class DAE:
@@ -55,10 +56,9 @@ class DAE:
 
         self.scaling_factor = 1
 
-	    # maximal value and mean pose in the dataset (used for scaling it to interval [-1,1] and back)
+    # maximal value and mean pose in the dataset (used for scaling it to interval [-1,1] and back)
         self.max_val = data_info.max_val
         self.mean_pose = data_info.mean_pose
-
 
         #################### Add the DATASETS to the GRAPH ###############
 
@@ -127,6 +127,7 @@ class DAE:
                 # Define loss
                 self._valid_loss = loss_reconstruction(self._valid_output,
                                                        self._valid_target_, self.max_val)
+
     @property
     def session(self):
         """ Interface for the session"""
@@ -164,7 +165,6 @@ class DAE:
         return y
 
     def construct_graph(self, input_seq_pl, dropout):
-
         """ Construct a TensorFlow graph for the AutoEncoding network
 
         Args:
@@ -209,8 +209,7 @@ class DAE:
 
         with tf.name_scope("Decoding"):
 
-            layer = self._representation = tf.placeholder\
-                (dtype=tf.float32, shape=middle_layer.get_shape().as_list(), name="Respres.")
+            layer = self._representation = tf.placeholder(dtype=tf.float32, shape=middle_layer.get_shape().as_list(), name="Respres.")
 
             for i in range(FLAGS.middle_layer, numb_layers):
 
@@ -293,8 +292,7 @@ class DAE:
         if i < self.num_hidden_layers:
             # Hidden layer pretrained weights
             # which are used after pretraining before fine-tuning
-            self[name_w + "_pretr"] = tf.get_variable(name="Var/" + name_w + "_pretr", initializer=
-                                                      tf.random_uniform(w_shape, -1 * a, a),
+            self[name_w + "_pretr"] = tf.get_variable(name="Var/" + name_w + "_pretr", initializer=tf.random_uniform(w_shape, -1 * a, a),
                                                       trainable=False)
             # Hidden layer pretrained biases
             self[name_b + "_pretr"] = tf.get_variable("Var/"+name_b+"_pretr", trainable=False,

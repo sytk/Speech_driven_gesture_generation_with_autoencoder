@@ -14,6 +14,7 @@ import os
 import train as tr
 from utils.utils import prepare_motion_data, DataSet, DataSets, fl
 
+
 def create_nn(train_data, dev_data, max_val, mean_pose, restoring):
     """
     Train or restore a neural network
@@ -49,10 +50,11 @@ def create_nn(train_data, dev_data, max_val, mean_pose, restoring):
 
     return nn
 
+
 def check_params():
 
     # Check if script get enough parameters
-    if len(sys.argv)<2:
+    if len(sys.argv) < 2:
         raise ValueError('Not enough paramters! \nUsage : python '+sys.argv[0].split("/")[-1]+' DATA_DIR')
 
     # Check if the dataset exists
@@ -66,6 +68,7 @@ def check_params():
         raise ValueError('Path to the checkpoints ({}) does not exit!\nChange the "chkpt_dir" flag in utils/flags.py'
                          ''.format(fl.FLAGS.chkpt_dir))
 
+
 if __name__ == '__main__':
 
     # Check parameters
@@ -74,7 +77,7 @@ if __name__ == '__main__':
     # Get the data
     DATA_DIR = sys.argv[1]
     train_normalized_data, train_data, test_normalized_data, test_data, dev_normalized_data, \
-    max_val, mean_pose = prepare_motion_data(DATA_DIR)
+        max_val, mean_pose = prepare_motion_data(DATA_DIR)
 
     # Train an AE network
     nn = create_nn(train_normalized_data, dev_normalized_data, max_val, mean_pose, restoring=False)
